@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TwinMind — Your AI That Remembers Everything</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* ── TRUE TWINMIND PALETTE ── */
+  --black:   #0C0C0C;   /* real site bg - warm near-black */
+  --bg1:     #111111;   /* section alt */
+  --bg2:     #181818;   /* card surfaces */
+  --bg3:     #202020;   /* elevated cards */
+  --orange:  #FF6600;   /* primary brand - exact CTA colour */
+  --orange2: #E85C00;   /* hover/pressed */
+  --orange-lo: rgba(255,102,0,0.10);
+  --orange-med:rgba(255,102,0,0.22);
+  --navy:    #0D2B45;   /* deep navy for light-section headings + replay btn */
+  --navy2:   #143554;
+  --white:   #FFFFFF;
+  --offwht:  #F7F7F7;   /* light section bg */
+  --card-lt: #EFEFEF;   /* light card surface */
+  --text-dk: #0D1117;   /* dark text on light bg */
+  --muted:   #888888;   /* secondary text on dark */
+  --muted-lt:#6B7280;   /* secondary text on light */
+  --border:  rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --lborder: rgba(0,0,0,0.10);    /* border on light bg */
+  --green:   #00C572;
+  /* tiny futuristic: one warm amber scan glow, grid texture */
+  --glow:    rgba(255,102,0,0.06);
+  --hf: 'Inter', sans-serif;
+  --bf: 'DM Sans', sans-serif;
+  --mf: 'DM Mono', monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:var(--bf);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+
+/* ── SUBTLE GRID TEXTURE (futuristic touch) ── */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,102,0,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,102,0,0.018) 1px,transparent 1px);
+  background-size:48px 48px;opacity:1}
+
+/* ── NAV — matches TwinMind pill-nav ── */
+nav{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100;
+  background:rgba(17,17,17,0.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.1);border-radius:999px;
+  padding:10px 10px 10px 24px;display:flex;align-items:center;gap:0;
+  width:min(860px,92vw);transition:all .35s}
+nav.scrolled{background:rgba(12,12,12,0.94);border-color:rgba(255,255,255,0.12);
+  box-shadow:0 4px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(255,102,0,0.06)}
+.logo{font-family:var(--hf);font-size:19px;font-weight:800;text-decoration:none;letter-spacing:-.02em;white-space:nowrap;flex-shrink:0}
+.logo em{font-style:normal;color:var(--white)}
+.logo span{color:var(--orange)}
+.navlinks{display:flex;gap:2px;list-style:none;flex:1;margin:0 16px;justify-content:center}
+.navlinks a{color:rgba(255,255,255,0.55);text-decoration:none;font-size:13.5px;font-weight:500;padding:6px 12px;border-radius:999px;transition:all .2s;white-space:nowrap}
+.navlinks a:hover{color:var(--white);background:rgba(255,255,255,0.08)}
+.nav-r{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.btn-login{background:transparent;border:none;color:rgba(255,255,255,0.55);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--bf)}
+.btn-login:hover{color:var(--white)}
+.btn-dl{background:var(--orange);border:none;color:var(--white);padding:9px 20px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .25s;font-family:var(--bf);white-space:nowrap}
+.btn-dl:hover{background:var(--orange2);transform:scale(1.03)}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 5% 80px;position:relative;z-index:1;overflow:hidden}
+/* warm orange radial glow - subtle futuristic touch */
+.hero::before{content:'';position:absolute;width:700px;height:500px;background:radial-gradient(ellipse,rgba(255,102,0,0.09) 0%,transparent 65%);top:40%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.hero::after{content:'';position:absolute;width:400px;height:300px;background:radial-gradient(ellipse,rgba(255,102,0,0.05) 0%,transparent 70%);bottom:10%;right:15%;pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,102,0,0.1);border:1px solid rgba(255,102,0,0.25);padding:6px 16px;border-radius:999px;font-size:12px;font-weight:600;color:var(--orange);margin-bottom:32px;font-family:var(--mf);letter-spacing:.04em;opacity:0;animation:up .9s .2s forwards}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:lpulse 1.8s infinite}
+@keyframes lpulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,197,114,.5)}50%{opacity:.6;box-shadow:0 0 0 5px rgba(0,197,114,0)}}
+h1.ht{font-family:var(--hf);font-size:clamp(44px,6.5vw,90px);font-weight:800;line-height:1.03;letter-spacing:-.035em;margin-bottom:8px;opacity:0;animation:up .9s .4s forwards}
+h1.ht .ora{color:var(--orange)}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--muted);max-width:500px;margin:20px auto 40px;line-height:1.65;opacity:0;animation:up .9s .6s forwards}
+@keyframes up{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;opacity:0;animation:up .9s .8s forwards}
+.btn-main{background:var(--orange);color:var(--white);border:none;padding:14px 30px;border-radius:999px;font-size:15.5px;font-weight:600;cursor:pointer;font-family:var(--bf);display:inline-flex;align-items:center;gap:8px;transition:all .25s;position:relative;overflow:hidden}
+.btn-main::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,0.15);opacity:0;transition:opacity .2s}
+.btn-main:hover{background:var(--orange2);transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,102,0,0.38)}
+.btn-main:hover::before{opacity:1}
+.btn-outline{background:transparent;color:var(--white);border:1.5px solid rgba(255,255,255,0.2);padding:14px 28px;border-radius:999px;font-size:15.5px;font-weight:500;cursor:pointer;font-family:var(--bf);transition:all .25s}
+.btn-outline:hover{border-color:rgba(255,255,255,0.45);background:rgba(255,255,255,0.05);transform:translateY(-2px)}
+.hero-stats{display:flex;gap:0;margin-top:64px;border:1px solid rgba(255,255,255,0.1);border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.03);opacity:0;animation:up .9s 1.1s forwards}
+.hst{padding:22px 40px;text-align:center;border-right:1px solid rgba(255,255,255,0.08);transition:background .25s;position:relative;overflow:hidden}
+.hst:last-child{border-right:none}
+.hst::before{content:'';position:absolute;inset:0;background:var(--orange-lo);opacity:0;transition:opacity .25s}
+.hst:hover::before{opacity:1}
+.hst-n{font-family:var(--hf);font-size:26px;font-weight:800;display:block;color:var(--white)}
+.hst-l{font-size:12px;color:var(--muted);display:block;margin-top:4px}
+
+/* ── MEMORY DEMO CARD — matches their actual recall card ── */
+.recall-card{background:var(--white);border-radius:20px;padding:36px;max-width:560px;margin:52px auto 0;text-align:left;box-shadow:0 24px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.08);opacity:0;animation:up .9s 1.3s forwards;position:relative;z-index:1}
+.recall-card h3{font-family:var(--hf);font-size:26px;font-weight:800;color:var(--navy);letter-spacing:-.025em;margin-bottom:24px}
+.recall-inner{background:#F2F3F5;border-radius:12px;padding:18px 20px;margin-bottom:18px}
+.recall-inner-label{font-size:12px;font-weight:700;color:var(--text-dk);margin-bottom:10px;display:block}
+.recall-items{list-style:none;display:flex;flex-direction:column;gap:8px}
+.recall-items li{font-size:14px;color:#374151;display:flex;gap:10px;line-height:1.5}
+.recall-items li::before{content:'·';color:var(--orange);font-weight:700;flex-shrink:0}
+.recall-btn{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:var(--white);border:none;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--bf);transition:all .2s;margin:0 auto;display:flex;width:fit-content}
+.recall-btn:hover{background:var(--navy2);transform:scale(1.02)}
+
+/* ── PRESS ── */
+.press{padding:32px 5%;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(255,255,255,0.015);position:relative;z-index:1;overflow:hidden}
+.press-inner{display:flex;align-items:center;gap:0}
+.press-lbl{font-size:11px;color:rgba(255,255,255,0.3);font-weight:600;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;flex-shrink:0;padding-right:28px;border-right:1px solid var(--border);margin-right:28px}
+.marquee-wrap{overflow:hidden;flex:1;display:flex}
+.marquee{display:flex;gap:52px;animation:mq 18s linear infinite;white-space:nowrap}
+.marquee2{display:flex;gap:52px;animation:mq 18s linear infinite;animation-delay:-9s;white-space:nowrap}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.plogo{font-family:var(--hf);font-size:13px;font-weight:800;color:rgba(255,255,255,0.22);letter-spacing:.06em;flex-shrink:0;transition:color .2s}
+.plogo:hover{color:rgba(255,255,255,0.5)}
+
+/* ── SECTIONS ── */
+section.s{padding:100px 5%;position:relative;z-index:1}
+section.s.light{background:var(--offwht);color:var(--text-dk)}
+.ey{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;font-family:var(--mf)}
+.ey.dk{color:var(--orange)}
+.ey.lt{color:var(--orange)}
+h2.st{font-family:var(--hf);font-size:clamp(30px,4vw,52px);font-weight:800;line-height:1.08;letter-spacing:-.028em;margin-bottom:18px}
+h2.st.lt{color:var(--navy)}
+.sub{font-size:17px;line-height:1.65;margin-bottom:52px;max-width:520px}
+.sub.dk{color:var(--muted)}
+.sub.lt{color:var(--muted-lt)}
+.tc{text-align:center}.tc .sub{margin:0 auto 52px}
+
+/* ── FEATURE CARDS ── */
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;border:1.5px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;background:rgba(255,255,255,0.08)}
+.fc{background:var(--bg2);padding:30px;transition:background .3s;cursor:pointer;position:relative;overflow:hidden}
+.fc::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,102,0,0.08),transparent 55%);opacity:0;transition:opacity .35s;pointer-events:none}
+.fc:hover{background:var(--bg3)}
+.fc:hover::before{opacity:1}
+.fc-ico{width:40px;height:40px;border-radius:10px;background:rgba(255,102,0,0.1);border:1px solid rgba(255,102,0,0.2);display:grid;place-items:center;margin-bottom:16px}
+.fc-ico svg{width:18px;height:18px;stroke:var(--orange);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fc-t{font-family:var(--hf);font-size:16px;font-weight:700;margin-bottom:8px;color:var(--white)}
+.fc-b{font-size:13.5px;color:var(--muted);line-height:1.6}
+.fc-tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:4px;margin-top:14px;font-family:var(--mf)}
+.tnow{background:rgba(255,102,0,0.1);color:var(--orange);border:1px solid rgba(255,102,0,0.2)}
+.tnew{background:rgba(0,197,114,0.1);color:var(--green);border:1px solid rgba(0,197,114,0.2)}
+.tsoon{background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)}
+.tfut{background:rgba(130,100,255,0.08);color:#A78BFA;border:1px solid rgba(130,100,255,0.2)}
+
+/* ── HOW IT WORKS — light section ── */
+.hiw-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.hiw-steps{display:flex;flex-direction:column}
+.hiw-step{display:flex;gap:18px;padding:22px 0;border-bottom:1px solid var(--lborder);cursor:pointer;transition:all .2s}
+.hiw-step:last-child{border-bottom:none}
+.hiw-num{width:34px;height:34px;border-radius:50%;border:1.5px solid #D1D5DB;display:grid;place-items:center;font-family:var(--hf);font-size:13px;font-weight:700;color:#9CA3AF;flex-shrink:0;margin-top:2px;transition:all .3s}
+.hiw-step.active .hiw-num{background:var(--orange);border-color:var(--orange);color:var(--white)}
+.hiw-step-t{font-family:var(--hf);font-size:17px;font-weight:700;margin-bottom:5px;color:#9CA3AF;transition:color .3s}
+.hiw-step.active .hiw-step-t{color:var(--navy)}
+.hiw-step-b{font-size:13.5px;color:var(--muted-lt);line-height:1.6;max-height:0;overflow:hidden;transition:max-height .4s ease,opacity .3s;opacity:0}
+.hiw-step.active .hiw-step-b{max-height:80px;opacity:1}
+/* screen mock */
+.hiw-screen{background:var(--black);border-radius:18px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.08);box-shadow:0 24px 64px rgba(0,0,0,0.25)}
+.scr-bar{background:#1C1C1C;border-bottom:1px solid rgba(255,255,255,0.07);padding:11px 14px;display:flex;align-items:center;gap:7px}
+.sd{width:10px;height:10px;border-radius:50%}.sd.r{background:#FF5F56}.sd.y{background:#FFBD2E}.sd.g{background:#27C93F}
+.scr-body{padding:24px;min-height:270px;display:flex;flex-direction:column;gap:12px}
+.spanel{display:none;flex-direction:column;gap:12px;animation:fadeUp .4s ease}
+.spanel.show{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.install-row{display:flex;align-items:center;gap:12px;background:rgba(255,102,0,0.08);border:1px solid rgba(255,102,0,0.15);border-radius:10px;padding:14px}
+.install-row svg{stroke:var(--orange);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.install-row p{font-size:13px;font-weight:600;color:var(--white)}
+.install-row span{font-size:12px;color:var(--muted)}
+.rec-bar{display:flex;align-items:center;gap:10px;background:rgba(0,197,114,0.07);border:1px solid rgba(0,197,114,0.15);border-radius:10px;padding:12px 14px}
+.rec-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:lpulse 1.2s infinite}
+.rec-lbl{font-size:13px;color:var(--green);font-family:var(--mf)}
+.rtimer{font-size:13px;color:var(--muted);margin-left:auto;font-family:var(--mf)}
+.waverow{display:flex;align-items:center;gap:3px;height:26px;margin-left:auto}
+.waverow b{display:block;width:3px;border-radius:3px;background:var(--orange);animation:wv .9s ease-in-out infinite}
+.waverow b:nth-child(1){animation-delay:0s;height:8px}
+.waverow b:nth-child(2){animation-delay:.1s;height:16px}
+.waverow b:nth-child(3){animation-delay:.2s;height:24px}
+.waverow b:nth-child(4){animation-delay:.3s;height:16px}
+.waverow b:nth-child(5){animation-delay:.4s;height:10px}
+.waverow b:nth-child(6){animation-delay:.5s;height:20px}
+.waverow b:nth-child(7){animation-delay:.6s;height:12px}
+@keyframes wv{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1.2)}}
+.transcript-line{font-size:13px;color:rgba(255,255,255,0.6);font-style:italic;line-height:1.55;border-bottom:1px solid var(--border);padding-bottom:10px}
+.transcript-meta{font-size:11px;color:var(--muted);font-family:var(--mf);display:flex;gap:12px}
+.chat-out{background:var(--orange);color:var(--white);border-radius:12px;padding:12px 16px;font-size:13.5px;align-self:flex-end;max-width:85%}
+.chat-in{background:#1E1E1E;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;font-size:13.5px;color:rgba(255,255,255,0.85);line-height:1.55}
+.sum-card{background:#1A1A1A;border:1px solid rgba(255,102,0,0.15);border-radius:10px;padding:14px}
+.sum-title{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-family:var(--mf)}
+.sum-item{font-size:12.5px;color:rgba(255,255,255,0.7);padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;gap:8px;line-height:1.45}
+.sum-item:last-child{border-bottom:none;padding-bottom:0}
+.sum-item::before{content:'›';color:var(--orange)}
+
+/* ── DEMO SEARCH ── */
+.demo-bar{display:flex;align-items:center;gap:0;background:#1A1A1A;border:1.5px solid rgba(255,255,255,0.1);border-radius:999px;overflow:hidden;padding:5px 5px 5px 22px;transition:all .3s}
+.demo-bar:focus-within{border-color:rgba(255,102,0,0.5);box-shadow:0 0 0 3px rgba(255,102,0,0.1)}
+.demo-input{flex:1;background:transparent;border:none;color:var(--white);font-size:15px;font-family:var(--bf);outline:none;padding:10px 0}
+.demo-input::placeholder{color:var(--muted)}
+.demo-go{background:var(--orange);color:var(--white);border:none;padding:10px 24px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--bf);transition:all .2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.demo-go:hover{background:var(--orange2)}
+.demo-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.chip{background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:7px 14px;border-radius:999px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s;font-family:var(--bf)}
+.chip:hover{background:rgba(255,102,0,0.08);border-color:rgba(255,102,0,0.25);color:var(--white)}
+.demo-result{margin-top:16px;background:#161616;border:1.5px solid rgba(255,102,0,0.2);border-radius:14px;padding:20px 22px;display:none;animation:fadeUp .35s ease}
+.demo-result.show{display:block}
+.dr-header{font-size:12px;color:var(--orange);font-family:var(--mf);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.dr-body{font-size:14.5px;color:rgba(255,255,255,0.88);line-height:1.7}
+.dr-meta{display:flex;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted);font-family:var(--mf)}
+
+/* ── TESTIMONIALS — light bg ── */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tcard{background:var(--white);border:1px solid var(--lborder);border-radius:16px;padding:28px;transition:all .3s;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.tcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--orange),var(--navy));transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.tcard:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,0.12)}
+.tcard:hover::after{transform:scaleX(1)}
+.tm{font-family:var(--hf);font-size:32px;font-weight:800;color:var(--orange);line-height:1}
+.tml{font-size:12px;color:var(--muted-lt);margin-top:2px;margin-bottom:18px;display:block}
+.tq{font-size:14px;color:#374151;line-height:1.7;font-style:italic;margin-bottom:20px}
+.ta{display:flex;align-items:center;gap:12px;border-top:1px solid var(--lborder);padding-top:16px}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-family:var(--hf);font-size:12px;font-weight:700;flex-shrink:0}
+.av.o{background:rgba(255,102,0,0.1);color:var(--orange);border:1px solid rgba(255,102,0,0.2)}
+.av.n{background:rgba(13,43,69,0.08);color:var(--navy);border:1px solid rgba(13,43,69,0.2)}
+.av.g{background:rgba(0,197,114,0.08);color:#059669;border:1px solid rgba(0,197,114,0.2)}
+.an{font-size:14px;font-weight:600;color:var(--navy)}
+.ar{font-size:12px;color:var(--muted-lt)}
+
+/* ── VISION ── */
+.vtabs{display:flex;gap:0;border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;margin:0 auto 52px;width:fit-content}
+.vtb{background:transparent;border:none;border-right:1px solid rgba(255,255,255,0.08);padding:11px 22px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--bf);transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px;white-space:nowrap}
+.vtb small{font-size:10px;opacity:.7;font-family:var(--mf)}
+.vtb:last-child{border-right:none}
+.vtb.active{background:var(--orange);color:var(--white)}
+.vtb:hover:not(.active){background:rgba(255,255,255,0.05);color:var(--white)}
+.vpanel{display:none;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+.vpanel.show{display:grid;animation:fadeUp .4s ease}
+.vpy{font-family:var(--mf);font-size:12px;color:var(--orange);margin-bottom:10px}
+.vpt{font-family:var(--hf);font-size:28px;font-weight:800;line-height:1.15;margin-bottom:14px}
+.vpb{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:26px}
+.vfeats{display:flex;flex-direction:column;gap:10px}
+.vfeat{display:flex;gap:12px;font-size:14px;color:rgba(255,255,255,0.82);align-items:flex-start}
+.vfd{width:18px;height:18px;border-radius:50%;background:rgba(255,102,0,0.1);border:1px solid rgba(255,102,0,0.25);display:grid;place-items:center;flex-shrink:0;margin-top:2px}
+.vfd::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--orange)}
+.vright{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;min-height:310px}
+.vqlbl{font-family:var(--mf);font-size:11px;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.vqlbl::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+.vq{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 15px;margin-bottom:8px;font-size:13.5px;color:var(--muted);cursor:pointer;transition:all .22s;font-style:italic}
+.vq::before{content:'"';color:var(--orange);font-style:normal;margin-right:1px}
+.vq::after{content:'"';color:var(--orange);font-style:normal;margin-left:1px}
+.vq:hover{background:rgba(255,102,0,0.07);border-color:rgba(255,102,0,0.2);color:var(--white)}
+.vq.act{background:rgba(255,102,0,0.08);border-color:rgba(255,102,0,0.3);color:var(--white)}
+.va{background:#1D1D1D;border:1px solid rgba(255,102,0,0.18);border-radius:10px;padding:13px 15px;font-size:13.5px;color:rgba(255,255,255,0.9);line-height:1.65;display:none;margin-top:-4px;margin-bottom:8px}
+.va.show{display:block;animation:fadeUp .3s ease}
+
+/* ── DIFF ── */
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dr{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;transition:all .25s}
+.dr:hover{background:var(--bg3);border-color:rgba(255,102,0,0.2);transform:scale(1.01)}
+.dl-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-family:var(--mf)}
+.dl-them{color:rgba(255,255,255,0.2)}
+.dl-us{color:var(--orange);text-align:right}
+.dl-t{font-size:13.5px;color:var(--muted)}
+.dl-u{font-size:13.5px;color:var(--white);font-weight:500;text-align:right}
+.vs-p{font-family:var(--mf);font-size:11px;color:var(--orange);background:rgba(255,102,0,0.1);padding:4px 10px;border-radius:999px;border:1px solid rgba(255,102,0,0.2);white-space:nowrap}
+
+/* ── PRICING ── */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:920px;margin:0 auto}
+.pc{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:32px;position:relative;transition:all .3s}
+.pc:hover{transform:translateY(-4px)}
+.pc.feat{border-color:var(--orange);background:rgba(255,102,0,0.05)}
+.pc.feat:hover{box-shadow:0 16px 48px rgba(255,102,0,0.15)}
+.pc-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--orange);color:var(--white);font-size:11px;font-weight:700;padding:4px 16px;border-radius:999px;white-space:nowrap;font-family:var(--mf)}
+.pc-name{font-family:var(--hf);font-size:14px;font-weight:600;color:var(--muted);margin-bottom:12px}
+.pc-price{font-family:var(--hf);font-size:46px;font-weight:800;line-height:1;display:flex;align-items:flex-start;gap:2px}
+.pc-price sup{font-size:22px;margin-top:8px;font-weight:700}
+.pc-price sub{font-size:18px;font-weight:500;color:var(--muted);align-self:flex-end;margin-bottom:4px}
+.pc-period{font-size:12.5px;color:var(--muted);margin:6px 0 24px}
+.pc-feats{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:28px;min-height:190px}
+.pc-feats li{font-size:13.5px;color:rgba(255,255,255,0.78);display:flex;gap:8px;align-items:flex-start}
+.pc-feats li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px}
+.pc-feats li.off{color:var(--muted)}
+.pc-feats li.off::before{content:'·';color:rgba(255,255,255,0.2)}
+.pc-btn{width:100%;padding:13px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--bf);transition:all .2s}
+.pc-ghost{background:transparent;border:1.5px solid rgba(255,255,255,0.15);color:var(--white)}
+.pc-ghost:hover{border-color:rgba(255,102,0,0.5);color:var(--orange)}
+.pc-solid{background:var(--orange);border:none;color:var(--white)}
+.pc-solid:hover{background:var(--orange2);transform:translateY(-1px)}
+
+/* ── MOAT ── */
+.moat{background:#111;border:1px solid rgba(255,102,0,0.15);border-radius:18px;padding:48px;text-align:center;max-width:800px;margin:0 auto;position:relative;overflow:hidden}
+.moat::before{content:'';position:absolute;width:600px;height:400px;background:radial-gradient(ellipse,rgba(255,102,0,0.06),transparent 60%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.moat h3{font-family:var(--hf);font-size:26px;font-weight:800;margin-bottom:14px;position:relative;letter-spacing:-.025em}
+.moat p{font-size:15.5px;color:var(--muted);line-height:1.72;position:relative}
+.moat em{color:var(--white);font-style:normal;font-weight:600}
+
+/* ── FINAL CTA ── */
+.fcta{text-align:center;padding:120px 5%;position:relative;z-index:1;overflow:hidden}
+.fcta::before{content:'';position:absolute;width:800px;height:500px;background:radial-gradient(ellipse,rgba(255,102,0,0.07),transparent 60%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.fcta h2{font-family:var(--hf);font-size:clamp(34px,5vw,64px);font-weight:800;letter-spacing:-.028em;line-height:1.04;margin-bottom:20px;position:relative}
+.fcta p{font-size:17px;color:var(--muted);margin-bottom:36px;position:relative}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:52px 5% 36px;z-index:1;position:relative}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px}
+.foot-brand p{font-size:13px;color:var(--muted);margin-top:14px;max-width:255px;line-height:1.65}
+.foot-col h4{font-family:var(--hf);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,0.28);margin-bottom:16px}
+.foot-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.foot-col a{color:var(--muted);text-decoration:none;font-size:13.5px;transition:color .2s}
+.foot-col a:hover{color:var(--white)}
+.foot-btm{border-top:1px solid var(--border);padding-top:22px;display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.25)}
+
+/* ── REVEAL ── */
+.rv{opacity:0;transform:translateY(32px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:translateY(0)}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}
+.rv.d4{transition-delay:.32s}.rv.d5{transition-delay:.4s}.rv.d6{transition-delay:.48s}
+
+canvas#cvs{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45}
+</style>
+</head>
+<body>
+
+<canvas id="cvs"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo"><em>twin</em><span>mind</span></a>
+  <ul class="navlinks">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#vision">5-Year Vision</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#">Blog</a></li>
+  </ul>
+  <div class="nav-r">
+    <button class="btn-login">Log in</button>
+    <button class="btn-dl">Download For Free</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span class="live-dot"></span>Ear-3 is live — #1 accuracy at 94.74%</div>
+  <h1 class="ht">Your life is<br><span class="ora" id="typer"></span></h1>
+  <p class="hero-sub">TwinMind captures every conversation, idea, and moment — so you never lose what matters.</p>
+  <div class="hero-btns">
+    <button class="btn-main">Download For Free →</button>
+    <button class="btn-outline">Watch Demo</button>
+  </div>
+
+  <!-- Recall card — matches actual TwinMind design -->
+  <div class="recall-card">
+    <h3>Recall every detail from your past</h3>
+    <div class="recall-inner">
+      <span class="recall-inner-label">Brief summary:</span>
+      <ul class="recall-items">
+        <li>Agreed to test the updated email drafts with 10 pilot users next week</li>
+        <li>Follow-up: Arpit &amp; Pranav to share final assets by Friday</li>
+        <li>Discussed launch timeline for the new onboarding flow, aiming for mid-November</li>
+      </ul>
+    </div>
+    <button class="recall-btn">↺ Replay</button>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hst"><span class="hst-n" data-count="30" data-suffix="K+ users">0</span><span class="hst-l">Active users</span></div>
+    <div class="hst"><span class="hst-n" data-count="140" data-suffix="+">0</span><span class="hst-l">Languages</span></div>
+    <div class="hst"><span class="hst-n" data-count="9474" data-dec="2" data-suffix="%">0</span><span class="hst-l">Ear-3 accuracy</span></div>
+    <div class="hst"><span class="hst-n" data-count="57" data-prefix="$" data-suffix="M seed">0</span><span class="hst-l">Backed by Sequoia</span></div>
+  </div>
+</section>
+
+<!-- PRESS -->
+<div class="press">
+  <div class="press-inner">
+    <div class="press-lbl">Featured in</div>
+    <div class="marquee-wrap">
+      <div class="marquee"><span class="plogo">FORBES</span><span class="plogo">BUSINESS INSIDER</span><span class="plogo">FAST COMPANY</span><span class="plogo">TechCrunch</span><span class="plogo">THE TIMES OF INDIA</span><span class="plogo">FORBES</span><span class="plogo">BUSINESS INSIDER</span><span class="plogo">FAST COMPANY</span><span class="plogo">TechCrunch</span><span class="plogo">THE TIMES OF INDIA</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE SEARCH DEMO -->
+<section class="s" style="padding-top:80px;padding-bottom:80px">
+  <div style="max-width:780px;margin:0 auto">
+    <div class="ey dk tc rv">Try it now</div>
+    <h2 class="st tc rv d1" style="margin-bottom:12px">Ask your memory anything</h2>
+    <p class="sub dk tc rv d2" style="margin-bottom:32px">Type a real question — see how TwinMind answers from your captured life.</p>
+    <div class="demo-bar rv d3">
+      <svg width="16" height="16" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex-shrink:0;margin-right:10px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="demo-input" id="demoIn" placeholder="e.g. What did I commit to in yesterday's standup?" autocomplete="off">
+      <button class="demo-go" id="demoBtn">Ask ↵</button>
+    </div>
+    <div class="demo-chips rv d4">
+      <button class="chip" data-q="What did I agree to in my last meeting?">Last meeting commitments</button>
+      <button class="chip" data-q="Draft a follow-up to my call with Sarah">Draft follow-up email</button>
+      <button class="chip" data-q="What was the book my professor recommended?">Professor's book rec</button>
+      <button class="chip" data-q="What were my action items last week?">Last week's action items</button>
+      <button class="chip" data-q="When did I last discuss the apartment search?">Apartment search context</button>
+    </div>
+    <div class="demo-result" id="demoRes">
+      <div class="dr-header">✓ &nbsp;TwinMind found this in your memory</div>
+      <div class="dr-body" id="demoAns"></div>
+      <div class="dr-meta"><span>From 3 sessions</span><span>Tap to replay any moment</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="s" id="features" style="padding-top:24px">
+  <div class="ey dk rv">What TwinMind does</div>
+  <h2 class="st rv d1">One product. Every layer of your life.</h2>
+  <p class="sub dk rv d2">Across iOS, Android, Chrome, and — soon — your AR glasses.</p>
+  <div class="fgrid">
+    <div class="fc rv d1">
+      <div class="fc-ico"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+      <div class="fc-t">Automate follow-up emails</div>
+      <div class="fc-b">Listens to meetings, drafts personalised follow-ups before you leave the room.</div>
+      <span class="fc-tag tnow">Available now</span>
+    </div>
+    <div class="fc rv d2">
+      <div class="fc-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <div class="fc-t">Natural language memory search</div>
+      <div class="fc-b">Ask anything in plain English. Get a direct answer from your actual life.</div>
+      <span class="fc-tag tnow">Available now</span>
+    </div>
+    <div class="fc rv d3">
+      <div class="fc-ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="fc-t">Lecture → study guide in 30 seconds</div>
+      <div class="fc-b">Transcribes in 140+ languages and builds structured study guides automatically.</div>
+      <span class="fc-tag tnow">Available now</span>
+    </div>
+    <div class="fc rv d4">
+      <div class="fc-ico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
+      <div class="fc-t">Shared collaborative to-do lists</div>
+      <div class="fc-b">Share task lists from any capture via link. No account required for recipients.</div>
+      <span class="fc-tag tnew">Just shipped</span>
+    </div>
+    <div class="fc rv d5">
+      <div class="fc-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+      <div class="fc-t">Video &amp; screen memory capture</div>
+      <div class="fc-b">Import Zoom and Meet recordings. TwinMind extracts decisions and action items.</div>
+      <span class="fc-tag tsoon">Coming Q3 2026</span>
+    </div>
+    <div class="fc rv d6">
+      <div class="fc-ico"><svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></div>
+      <div class="fc-t">AR glasses &amp; spatial memory</div>
+      <div class="fc-b">Meta Ray-Ban, Vision Pro — your world becomes permanently searchable.</div>
+      <span class="fc-tag tfut">2028 vision</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS — light section matching TwinMind's white sections -->
+<section class="s light" id="how">
+  <div class="ey lt rv tc">Setup</div>
+  <h2 class="st lt tc rv d1">Setup in 3 minutes. Save 7 hours every week.</h2>
+  <div class="hiw-grid rv d2">
+    <div id="hiwSteps">
+      <div class="hiw-step active" data-p="sp1">
+        <div class="hiw-num">1</div>
+        <div>
+          <div class="hiw-step-t">Download the app</div>
+          <div class="hiw-step-b">Available on iOS, Android, Chrome, and Mac. No setup, no workflow changes — install and go.</div>
+        </div>
+      </div>
+      <div class="hiw-step" data-p="sp2">
+        <div class="hiw-num">2</div>
+        <div>
+          <div class="hiw-step-t">Press record. Live your life.</div>
+          <div class="hiw-step-b">Runs silently in the background in 140+ languages for 16+ hours without draining your battery.</div>
+        </div>
+      </div>
+      <div class="hiw-step" data-p="sp3">
+        <div class="hiw-num">3</div>
+        <div>
+          <div class="hiw-step-t">Ask anything, instantly</div>
+          <div class="hiw-step-b">Search your entire memory in plain language. Get summaries, action items, drafts — in seconds.</div>
+        </div>
+      </div>
+    </div>
+    <div class="hiw-screen">
+      <div class="scr-bar"><span class="sd r"></span><span class="sd y"></span><span class="sd g"></span></div>
+      <div class="scr-body">
+        <div class="spanel show" id="sp1">
+          <div class="install-row">
+            <svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+            <div><p>TwinMind is ready</p><span>iOS · Android · Chrome · Mac</span></div>
+          </div>
+          <div style="font-size:13px;color:var(--muted);padding:6px 4px;line-height:1.6">Press record on any device. TwinMind handles everything from here.</div>
+        </div>
+        <div class="spanel" id="sp2">
+          <div class="rec-bar">
+            <span class="rec-dot"></span>
+            <span class="rec-lbl">Recording</span>
+            <div class="waverow"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+            <span class="rtimer" id="rt">00:00</span>
+          </div>
+          <div class="transcript-line">...the onboarding redesign needs to ship by Thursday. Can you loop in Priya before the review? API costs are also running higher than expected...</div>
+          <div class="transcript-meta"><span>Speaker: Daniel</span><span>Confidence: 98.2%</span><span>EN · 140+ supported</span></div>
+        </div>
+        <div class="spanel" id="sp3">
+          <div class="chat-out">What did I commit to in yesterday's standup?</div>
+          <div class="chat-in"><span id="typTxt"></span><span style="display:inline-block;width:2px;height:13px;background:var(--orange);vertical-align:middle;animation:blink .8s step-end infinite" id="typCur"></span></div>
+          <div class="sum-card" id="sumCard" style="display:none">
+            <div class="sum-title">Action items from yesterday</div>
+            <div class="sum-item">Onboarding redesign spec — due Thursday</div>
+            <div class="sum-item">Loop in Priya before Friday review</div>
+            <div class="sum-item">Review API cost overage with finance</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS — light -->
+<section class="s light" style="padding-top:80px">
+  <div class="ey lt tc rv">Real users. Real results.</div>
+  <h2 class="st lt tc rv d1">People who never want to forget again</h2>
+  <p class="sub lt tc rv d2">Every testimonial has a name, a role, and a before/after metric — because that's what builds real trust.</p>
+  <div class="tgrid">
+    <div class="tcard rv d1">
+      <div class="tm">45 min → 20 sec</div><span class="tml">Time to review shift notes</span>
+      <p class="tq">"As a medical resident, I used to spend 45 minutes re-reading shift notes. TwinMind gives me a summary in 20 seconds. I'm more present during rounds now."</p>
+      <div class="ta"><div class="av o">PR</div><div><div class="an">Dr. Priya R.</div><div class="ar">Internal Medicine, UCSF</div></div></div>
+    </div>
+    <div class="tcard rv d2">
+      <div class="tm">0 dropped items</div><span class="tml">Across 40+ meetings/month</span>
+      <p class="tq">"I run a 12-person team with back-to-back calls all day. TwinMind drafts my follow-up emails before I've left the room. I haven't missed an action item in three months."</p>
+      <div class="ta"><div class="av n">JK</div><div><div class="an">James K.</div><div class="ar">Head of Product, Series B SaaS</div></div></div>
+    </div>
+    <div class="tcard rv d3">
+      <div class="tm">B → Straight A's</div><span class="tml">Grade change this semester</span>
+      <p class="tq">"I stopped taking notes during lectures so I can actually focus. TwinMind builds my study guide the moment class ends. Straight A's this semester."</p>
+      <div class="ta"><div class="av g">AS</div><div><div class="an">Amara S.</div><div class="ar">3rd Year CS, UC Berkeley</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5-YEAR VISION — dark -->
+<section class="s" id="vision">
+  <div class="ey dk tc rv">5-Year Vision</div>
+  <h2 class="st tc rv d1">Not an app. A second mind.</h2>
+  <p class="sub dk tc rv d2">TwinMind in 2031 is unrecognisable from today. Click each era to see where we're going.</p>
+  <div class="vtabs rv d3" id="vtabs">
+    <button class="vtb active" data-v="v26">Today<small>2026</small></button>
+    <button class="vtb" data-v="v27">Visual Layer<small>2027</small></button>
+    <button class="vtb" data-v="v28">Ambient AR<small>2028</small></button>
+    <button class="vtb" data-v="v29">Proactive AI<small>2029</small></button>
+    <button class="vtb" data-v="v31">Second Mind<small>2031</small></button>
+  </div>
+
+  <div class="vpanel show" id="v26">
+    <div><div class="vpy">2026 — Audio Memory Layer</div><div class="vpt">Every conversation.<br>Every idea.</div><p class="vpb">TwinMind today captures everything you say and hear — in 140+ languages, fully on-device. It runs silently and makes your conversations searchable forever.</p>
+    <div class="vfeats"><div class="vfeat"><div class="vfd"></div><span>Voice, meetings, lectures — real-time</span></div><div class="vfeat"><div class="vfd"></div><span>Natural language memory search</span></div><div class="vfeat"><div class="vfd"></div><span>AI email drafts and action items</span></div><div class="vfeat"><div class="vfd"></div><span>Smart Daily Brief every morning</span></div></div></div>
+    <div class="vright"><div class="vqlbl">Click a query to see TwinMind answer it</div>
+      <div class="vq" data-a="a1">What did I agree to in yesterday's standup?</div><div class="va" id="a1">You committed to finishing the onboarding spec by Thursday, looping in Priya before the Friday review, and reviewing API cost overage. Marcus covers the integration. <em style="font-size:12px;color:var(--muted)"> — Yesterday · 9:14am · 3 sessions</em></div>
+      <div class="vq" data-a="a2">Draft a follow-up to my call with Sarah</div><div class="va" id="a2">Hi Sarah, great catching up today. I'll send the Q3 numbers by end of week and the revised pricing proposal by Friday. Looking forward to November. — [your name] <em style="font-size:12px;color:var(--muted)"> — Call with Sarah · 2h ago</em></div>
+    </div>
+  </div>
+  <div class="vpanel" id="v27">
+    <div><div class="vpy">2027 — Visual Memory Layer</div><div class="vpt">What you read, watch, and research — remembered.</div><p class="vpb">TwinMind extends beyond audio. Screen history, video calls, articles you read — all become searchable. One query reaches everything.</p>
+    <div class="vfeats"><div class="vfeat"><div class="vfd"></div><span>Import Zoom and Meet recordings</span></div><div class="vfeat"><div class="vfd"></div><span>Chrome: capture articles you read (opt-in)</span></div><div class="vfeat"><div class="vfd"></div><span>Cross-modal search: audio + video + text unified</span></div></div></div>
+    <div class="vright"><div class="vqlbl">Cross-modal queries</div>
+      <div class="vq" data-a="b1">Find the research paper I read about attention spans last Tuesday</div><div class="va" id="b1">You read "Cognitive Load and Digital Attention" (NNGroup, 2027) on Tuesday at 2:14pm. You highlighted two sections. Related team discussion Wednesday morning. <em style="font-size:12px;color:var(--muted)"> — Chrome extension capture</em></div>
+      <div class="vq" data-a="b2">What apartment listing matched my budget in March?</div><div class="va" id="b2">2BR on Fillmore St, $3,200/month. You viewed it March 14, noted "great light, small kitchen." Discussed with Maya on March 16. <em style="font-size:12px;color:var(--muted)"> — Browser history + voice note</em></div>
+    </div>
+  </div>
+  <div class="vpanel" id="v28">
+    <div><div class="vpy">2028 — Ambient Capture Era</div><div class="vpt">Everything you see. Everything you hear.</div><p class="vpb">With Meta Ray-Ban, Vision Pro, and Snap Spectacles, TwinMind becomes ambient. No phone needed. No deliberate action. Just live — your memory grows automatically.</p>
+    <div class="vfeats"><div class="vfeat"><div class="vfd"></div><span>Meta Ray-Ban and Vision Pro native apps</span></div><div class="vfeat"><div class="vfd"></div><span>Spatial memory: location + time + visual + audio</span></div><div class="vfeat"><div class="vfd"></div><span>Passive capture — no tapping, no forgetting</span></div></div></div>
+    <div class="vright"><div class="vqlbl">Spatial memory queries</div>
+      <div class="vq" data-a="c1">Show me the restaurant I walked past in Kyoto in March</div><div class="va" id="c1">Kikunoi Honten — 3-Michelin-star kaiseki on Yasaka-dori. Captured by your glasses at 6:42pm March 8. You said "we should come back here." <em style="font-size:12px;color:var(--muted)"> — Ray-Ban capture · Kyoto</em></div>
+      <div class="vq" data-a="c2">Who was the person I met at the Berlin conference?</div><div class="va" id="c2">Dr. Lena Fischer, AI researcher at TU Berlin. You spoke for 14 minutes on Day 2 at 3:20pm about multi-modal memory systems. <em style="font-size:12px;color:var(--muted)"> — Glasses capture · Berlin</em></div>
+    </div>
+  </div>
+  <div class="vpanel" id="v29">
+    <div><div class="vpy">2029 — Proactive Intelligence</div><div class="vpt">TwinMind surfaces context before you ask.</div><p class="vpb">With 3+ years of memory, TwinMind becomes proactive. It knows who you're meeting, what unresolved tension exists, what you committed to — before you open the app.</p>
+    <div class="vfeats"><div class="vfeat"><div class="vfd"></div><span>Pre-meeting briefs with all relevant history</span></div><div class="vfeat"><div class="vfd"></div><span>Relationship graph and pattern recognition</span></div><div class="vfeat"><div class="vfd"></div><span>Health context across doctor visits</span></div></div></div>
+    <div class="vright"><div class="vqlbl">Proactive context delivered</div>
+      <div class="vq" data-a="d1">Brief me before my meeting with Rajesh in 30 minutes</div><div class="va" id="d1">Last spoke Feb 2029. You committed to a revised contract by end of March (not sent). Open tension: pricing from Oct 2028 unresolved. Suggest: acknowledge the delay first. <em style="font-size:12px;color:var(--muted)"> — 8 captured conversations</em></div>
+      <div class="vq" data-a="d2">I'm seeing my doctor today — what should I mention?</div><div class="va" id="d2">3 months ago you mentioned afternoon fatigue. You've discussed sleep 4 times this year. Also: lower back pain in January — never brought up at an appointment. <em style="font-size:12px;color:var(--muted)"> — 12 relevant conversations</em></div>
+    </div>
+  </div>
+  <div class="vpanel" id="v31">
+    <div><div class="vpy">2031 — The Second Mind</div><div class="vpt">Five years of your life. Perfectly searchable.</div><p class="vpb">No other AI can answer these questions — because no other AI was there. That is TwinMind's irreplaceable moat.</p>
+    <div class="vfeats"><div class="vfeat"><div class="vfd"></div><span>Life search engine: any moment, 5 years back</span></div><div class="vfeat"><div class="vfd"></div><span>Memory legacy: opt-in sharing with loved ones</span></div><div class="vfeat"><div class="vfd"></div><span>Switching cost = your entire life archive</span></div></div></div>
+    <div class="vright"><div class="vqlbl">Only TwinMind can answer these</div>
+      <div class="vq" data-a="e1">What was the book my professor recommended in my 2026 finance lecture?</div><div class="va" id="e1">"The Sovereign Individual" by Davidson &amp; Rees-Mogg. Prof. Chandler mentioned it Sept 14, 2026. You noted it down — and never ordered it. <em style="font-size:12px;color:var(--muted)"> — Lecture capture · Sep 2026</em></div>
+      <div class="vq" data-a="e2">Show me every conversation I had with my grandmother before she passed</div><div class="va" id="e2">Found 47 captured conversations between March 2026 and November 2029. The last recording is from her 80th birthday — 2 hours 14 minutes. Replay, or see a summary? <em style="font-size:12px;color:var(--muted)"> — 47 sessions across 3 years</em></div>
+    </div>
+  </div>
+
+  <div style="margin-top:64px">
+    <div class="moat rv">
+      <h3>ChatGPT knows the world. Google knows the web. <span style="color:var(--orange)">TwinMind knows you.</span></h3>
+      <p>No competitor can retroactively capture your past. Users who start today own a 5-year head start. Every year of memory makes TwinMind <em>more valuable and harder to leave</em> — the switching cost is your entire life archive.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DIFFERENTIATORS -->
+<section class="s" style="padding-top:80px">
+  <div class="ey dk rv">Why TwinMind</div>
+  <h2 class="st rv d1">What no one else can do</h2>
+  <p class="sub dk rv d2">Every competitor captures a slice. TwinMind captures the whole.</p>
+  <div class="dgrid">
+    <div class="dr rv d1"><div><div class="dl-lbl dl-them">ChatGPT / Claude</div><div class="dl-t">Knows the world — needs your context every session</div></div><div class="vs-p">vs</div><div><div class="dl-lbl dl-us">TwinMind</div><div class="dl-u">Knows your life — context is automatic</div></div></div>
+    <div class="dr rv d2"><div><div class="dl-lbl dl-them">Google Search</div><div class="dl-t">Indexes public info — your private life is invisible</div></div><div class="vs-p">vs</div><div><div class="dl-lbl dl-us">TwinMind</div><div class="dl-u">Indexes your private life — conversations, decisions</div></div></div>
+    <div class="dr rv d3"><div><div class="dl-lbl dl-them">Otter / Fireflies</div><div class="dl-t">Cloud-based work meeting notes</div></div><div class="vs-p">vs</div><div><div class="dl-lbl dl-us">TwinMind</div><div class="dl-u">On-device, whole-of-life, 140+ languages</div></div></div>
+    <div class="dr rv d4"><div><div class="dl-lbl dl-them">Rewind.ai</div><div class="dl-t">Mac screen recorder — desktop only</div></div><div class="vs-p">vs</div><div><div class="dl-lbl dl-us">TwinMind</div><div class="dl-u">Mobile-first, cross-platform, real-world capture</div></div></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="s" id="pricing" style="background:var(--bg1);border-top:1px solid var(--border)">
+  <div class="ey dk tc rv">Pricing</div>
+  <h2 class="st tc rv d1">Start free. Stay as long as your life grows.</h2>
+  <p class="sub dk tc rv d2">The free tier gets you to your aha moment — no credit card needed.</p>
+  <div class="pgrid">
+    <div class="pc rv d1">
+      <div class="pc-name">Free</div>
+      <div class="pc-price"><sup>$</sup>0</div>
+      <div class="pc-period">Always free</div>
+      <ul class="pc-feats">
+        <li>Unlimited audio capture</li><li>30-day searchable memory</li><li>AI summaries &amp; action items</li><li>Chrome extension</li><li>iOS &amp; Android apps</li>
+        <li class="off">Memory beyond 30 days</li><li class="off">Email automation</li><li class="off">Collaborative to-do lists</li>
+      </ul>
+      <button class="pc-btn pc-ghost">Get started free</button>
+    </div>
+    <div class="pc feat rv d2">
+      <div class="pc-badge">Most popular</div>
+      <div class="pc-name">Pro</div>
+      <div class="pc-price"><sup>$</sup>10<sub>/mo</sub></div>
+      <div class="pc-period">or $99/year — save 17%</div>
+      <ul class="pc-feats">
+        <li>Everything in Free</li><li>Unlimited memory search</li><li>Email automation (Gmail)</li><li>Collaborative to-do lists</li><li>Smart Daily Brief</li><li>Custom speaker labels</li><li>Output format templates</li><li>Google + Apple Calendar sync</li>
+      </ul>
+      <button class="pc-btn pc-solid">Start 7-day free trial</button>
+    </div>
+    <div class="pc rv d3">
+      <div class="pc-name">API / Developer</div>
+      <div class="pc-price"><sup>$</sup>0.23<sub>/hr</sub></div>
+      <div class="pc-period">Ear-3 transcription API</div>
+      <ul class="pc-feats">
+        <li>94.74% accuracy — #1 ranked</li><li>3.8% diarization error rate</li><li>140+ languages</li><li>REST + WebSocket APIs</li><li>Real-time &amp; batch modes</li><li>No monthly minimum</li><li>Dedicated support</li>
+      </ul>
+      <button class="pc-btn pc-ghost">Get API access</button>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="fcta rv">
+  <h2>Start building your<br><span style="color:var(--orange)">memory today.</span></h2>
+  <p>Every conversation you don't capture is one you'll forget. TwinMind is free — and it starts working the moment you press record.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative">
+    <button class="btn-main">Download For Free →</button>
+    <button class="btn-outline">Install Chrome Extension</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand"><a href="#" class="logo"><em>twin</em><span>mind</span></a><p>The memory layer for human intelligence. Built by ex-Google X scientists. Backed by Sequoia. On-device, private, always yours.</p></div>
+    <div class="foot-col"><h4>Product</h4><ul><li><a href="#">iOS App</a></li><li><a href="#">Android App</a></li><li><a href="#">Chrome Extension</a></li><li><a href="#">Automate Emails</a></li><li><a href="#">Transcribe Audio</a></li></ul></div>
+    <div class="foot-col"><h4>Company</h4><ul><li><a href="#">About</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li></ul></div>
+    <div class="foot-col"><h4>Legal</h4><ul><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms</a></li><li><a href="#">Security</a></li><li><a href="#">API Docs</a></li></ul></div>
+  </div>
+  <div class="foot-btm"><span>© 2026 TwinMind, Inc.</span><span>Your data stays on your device. Always.</span></div>
+</footer>
+
+<style>
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+<script>
+// ── PARTICLE CANVAS — warm orange/amber tones matching brand ──
+(function(){
+  const cv=document.getElementById('cvs'),ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  const resize=()=>{W=cv.width=innerWidth;H=cv.height=innerHeight;pts=[];
+    for(let i=0;i<130;i++) pts.push({x:Math.random()*W,y:Math.random()*H,r:.3+Math.random()*1,s:.04+Math.random()*.25,o:Math.random()*.5+.15,t:Math.random()*Math.PI*2});
+  };
+  const draw=()=>{
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.t+=.008;p.o=.12+Math.abs(Math.sin(p.t))*.42;p.y-=p.s;
+      if(p.y<-2){p.y=H+2;p.x=Math.random()*W}
+      // orange-tinted particles to match brand
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,160,60,${p.o})`;ctx.fill();
+    });
+    // subtle connection lines — warm amber
+    for(let i=0;i<pts.length;i+=6){
+      for(let j=i+1;j<Math.min(i+4,pts.length);j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<90){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle=`rgba(255,102,0,${.06*(1-d/90)})`;ctx.lineWidth=.5;ctx.stroke();}
+      }
+    }
+    requestAnimationFrame(draw);
+  };
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+// ── NAV ──
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>60));
+
+// ── TYPEWRITER ──
+(function(){
+  const words=['worth remembering.','your second mind.','never forgotten.','worth capturing.'];
+  const el=document.getElementById('typer');let wi=0,ci=0,del=false;
+  function type(){
+    const w=words[wi];
+    if(!del){if(ci<=w.length){el.innerHTML=w.slice(0,ci)+(ci<=w.length?'<span style="display:inline-block;width:3px;height:.85em;background:var(--orange);vertical-align:middle;margin-left:2px;animation:blink .8s step-end infinite"></span>':'');ci++;setTimeout(type,ci===w.length+1?1800:75);}else{del=true;setTimeout(type,1600);}}
+    else{if(ci>0){ci--;el.innerHTML=w.slice(0,ci)+'<span style="display:inline-block;width:3px;height:.85em;background:var(--orange);vertical-align:middle;margin-left:2px;animation:blink .8s step-end infinite"></span>';setTimeout(type,40);}else{del=false;wi=(wi+1)%words.length;setTimeout(type,200);}}
+  }
+  setTimeout(type,1200);
+})();
+
+// ── COUNTERS ──
+(function(){
+  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;
+    const el=e.target,tar=+el.dataset.count,dec=+el.dataset.dec||0,pre=el.dataset.prefix||'',suf=el.dataset.suffix||'';
+    const dur=1800,s=performance.now();
+    (function t(n){const p=Math.min((n-s)/dur,1),ease=1-Math.pow(1-p,4),v=tar*ease;
+      if(dec>0)el.textContent=pre+(v/100).toFixed(dec)+suf;
+      else if(suf.includes('K'))el.textContent=pre+(v/1000).toFixed(0)+'K+ users';
+      else el.textContent=pre+Math.round(v)+suf;
+      if(p<1)requestAnimationFrame(t);})(s);
+    obs.unobserve(el);
+  });},{threshold:.5});
+  document.querySelectorAll('[data-count]').forEach(el=>obs.observe(el));
+})();
+
+// ── REVEAL ──
+(function(){
+  const obs=new IntersectionObserver(e=>e.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}}),{threshold:.08});
+  document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+})();
+
+// ── FEATURE CARD GLOW ──
+document.querySelectorAll('.fc').forEach(c=>{
+  c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');});
+});
+
+// ── DEMO SEARCH ──
+const ans={'What did I agree to in my last meeting?':'You committed to finishing the onboarding spec by Thursday, looping in Priya before the Friday review, and reviewing API cost overage with finance. Marcus covers integration. <em style="font-size:12px;color:var(--muted)"> — Yesterday · 9:14am · 3 matched sessions</em>','Draft a follow-up to my call with Sarah':'Hi Sarah, great catching up today. I\'ll send the Q3 numbers by end of week and the revised pricing proposal by Friday. Looking forward to November. — [your name] <em style="font-size:12px;color:var(--muted)"> — Call with Sarah · 2h ago · 42 min</em>','What was the book my professor recommended?':'"The Sovereign Individual" by Davidson and Rees-Mogg. Prof. Chandler mentioned it Sept 14, 2026 during your macro-economic cycles lecture. You noted it — never ordered it. <em style="font-size:12px;color:var(--muted)"> — Finance lecture · Sep 2026</em>','What were my action items last week?':'Monday: review design handoff. Tuesday: call back insurance (never done). Thursday: submit Berlin expense report. Friday: share onboarding doc with Maya. <em style="font-size:12px;color:var(--muted)"> — 8 sessions last week</em>','When did I last discuss the apartment search?':'March 16, 2026 — conversation with Maya, 28 min. You discussed the Fillmore listing ($3,200/mo) and agreed you needed 2 more viewings before deciding. <em style="font-size:12px;color:var(--muted)"> — Voice conversation · 11:24am</em>'};
+function runDemo(q){const res=document.getElementById('demoRes'),ab=document.getElementById('demoAns');ab.innerHTML=ans[q]||`TwinMind found relevant context from your recent sessions about "<strong>${q}</strong>". In the live app this surfaces your actual memories.`;res.classList.add('show');res.scrollIntoView({behavior:'smooth',block:'nearest'});}
+document.getElementById('demoBtn').addEventListener('click',()=>{const v=document.getElementById('demoIn').value.trim();if(v)runDemo(v);});
+document.getElementById('demoIn').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim())runDemo(e.target.value.trim());});
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{document.getElementById('demoIn').value=c.dataset.q;runDemo(c.dataset.q);}));
+
+// ── HIW ──
+(function(){
+  const steps=document.querySelectorAll('.hiw-step');let ri;
+  function show(id){document.querySelectorAll('.spanel').forEach(p=>p.classList.remove('show'));document.getElementById(id).classList.add('show');
+    if(id==='sp2'){clearInterval(ri);let s=0;ri=setInterval(()=>{s++;document.getElementById('rt').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);}
+    else clearInterval(ri);
+    if(id==='sp3'){const txt='You committed to: finishing the onboarding spec by Thursday, looping in Priya, and reviewing API costs.';const el=document.getElementById('typTxt');const sc=document.getElementById('sumCard');el.textContent='';sc.style.display='none';let i=0;(function t(){if(i<txt.length){el.textContent+=txt[i++];setTimeout(t,26);}else sc.style.display='block';})()} 
+  }
+  steps.forEach(s=>s.addEventListener('click',()=>{steps.forEach(x=>x.classList.remove('active'));s.classList.add('active');show(s.dataset.p);}));
+  let ci=0;setInterval(()=>{ci=(ci+1)%steps.length;steps.forEach(x=>x.classList.remove('active'));steps[ci].classList.add('active');show(steps[ci].dataset.p);},4500);
+})();
+
+// ── VISION TABS ──
+document.getElementById('vtabs').addEventListener('click',e=>{
+  const b=e.target.closest('.vtb');if(!b)return;
+  document.querySelectorAll('.vtb').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.vpanel').forEach(p=>p.classList.remove('show'));
+  b.classList.add('active');document.getElementById(b.dataset.v).classList.add('show');
+  document.querySelectorAll('.va').forEach(a=>a.classList.remove('show'));
+  document.querySelectorAll('.vq').forEach(q=>q.classList.remove('act'));
+});
+document.querySelectorAll('.vq').forEach(vq=>{
+  vq.addEventListener('click',()=>{
+    const id=vq.dataset.a,el=document.getElementById(id),open=el.classList.contains('show');
+    vq.closest('.vright').querySelectorAll('.va').forEach(a=>a.classList.remove('show'));
+    vq.closest('.vright').querySelectorAll('.vq').forEach(q=>q.classList.remove('act'));
+    if(!open){el.classList.add('show');vq.classList.add('act');}
+  });
+});
+
+// ── HERO PARALLAX ──
+window.addEventListener('scroll',()=>{
+  const y=scrollY,h=document.querySelector('.hero');
+  if(h&&y<innerHeight)h.style.transform=`translateY(${y*.28}px)`;
+},{passive:true});
+</script>
+</body>
+</html>
